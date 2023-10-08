@@ -1,0 +1,73 @@
+## This is us! The dex server!
+issuer: http://localhost:5556
+
+## Endpoints configuration
+web:
+  http: 0.0.0.0:5556
+
+telemetry:
+  http: 0.0.0.0:5558
+
+grpc:
+  addr: 0.0.0.0:5557
+
+## Dex state, contains the users' login state.
+storage:
+  type: memory
+
+frontend:
+  theme: dark
+
+## Our go application. This is a whitelist basically.
+staticClients:
+  - id: example-app # client ID
+    redirectURIs:
+      - 'http://localhost:3000/callback'
+    name: 'Example App'
+    secret: ZXhhbXBsZS1hcHAtc2VjcmV0 # client Secret
+    #secretEnv: SECRET_ENV_NAME # Use secretEnv to read environment variable instead of hard-coding.
+
+## The connectors!
+connectors:
+  - type: oidc
+    id: google
+    name: Google
+    config:
+      # URL to the OIDC Issuer
+      issuer: https://accounts.google.com
+      # Connector config values starting with a "$" will read from the environment.
+      clientID: $GOOGLE_CLIENT_ID
+      clientSecret: $GOOGLE_CLIENT_SECRET
+      # Dex's issuer URL + "/callback"
+      redirectURI: http://localhost:5556/callback
+  - type: github
+    id: github
+    name: GitHub
+    config:
+      # Connector config values starting with a "$" will read from the environment.
+      clientID: $GITHUB_CLIENT_ID
+      clientSecret: $GITHUB_CLIENT_SECRET
+      # Dex's issuer URL + "/callback"
+      redirectURI: http://localhost:5556/callback
+  - type: ldap
+    id: ldap
+    name: LDAP
+    config:
+      host: 192.168.0.81:3389 # EDIT THIS
+      insecureNoSSL: true
+      userSearch:
+        baseDN: ou=people,dc=example,dc=com
+        username: uid
+        idAttr: uid
+        emailAttr: mail
+        nameAttr: cn
+        preferredUsernameAttr: uid
+      groupSearch:
+        baseDN: ou=groups,dc=example,dc=com
+        userMatchers:
+          - userAttr: uid
+            groupAttr: member
+        nameAttr: cn
+
+## Enable self-hosted users. We've disabled that since our database is in-memory.
+enablePasswordDB: false
